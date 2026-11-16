@@ -63,7 +63,17 @@ function doReveal(room,playerIndex,action){
  room.revealed.push({card,source,owner,position});
  const values=room.revealed.map(r=>r.card.value);
  if(values.some(v=>v!==values[0])){
-  resetRevealed(room);room.lastMessage=`Not a match. ${room.players[playerIndex].name}'s turn ends.`;nextTurn(room);return;
+  // Keep picked cards visible briefly before clearing the reveal and passing the turn.
+  room.status='resolving';
+  room.lastMessage='Not a match. Showing the picked card before the next turn.';
+  setTimeout(()=>{
+   if(room.status!=='resolving')return;
+   resetRevealed(room);
+   nextTurn(room);
+   room.status='playing';
+   emitRoom(room);
+  },1600);
+  return;
  }
  if(room.revealed.length===3){
   const value=values[0];const set={value,winner:playerIndex,team:isTeam(room)?room.players[playerIndex].team:null};room.sets.push(set);
