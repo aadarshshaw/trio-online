@@ -7,6 +7,7 @@ import './style.css';
 const SERVER=import.meta.env.VITE_SERVER_URL||(import.meta.env.DEV?'http://localhost:3001':window.location.origin);
 const socket=io(SERVER,{path:'/socket.io',autoConnect:true});
 let audioContext;
+function unlockAudio(){try{const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)return;audioContext ||= new AudioContextClass();if(audioContext.state==='suspended')audioContext.resume();}catch{}}
 function playSfx(kind, muted=false){
  if(muted) return;
  try {
@@ -37,8 +38,8 @@ function App(){
  useEffect(()=>{if(!state)return;const previous=previousState.current;if(previous){if((state.revealed?.length||0)>(previous.revealed?.length||0))playSfx('flip',muted);if(state.lastMessage!==previous.lastMessage){if(state.lastMessage?.startsWith('Not a match'))playSfx('miss',muted);else if(state.lastMessage?.includes('collected'))playSfx('trio',muted);}}previousState.current=state;},[state,muted]);
  const me=state?.players.find(p=>p.id===myId);const myIndex=me?.index;const isHost=state?.players[0]?.id===myId;const myTurn=state?.status==='playing'&&state.current===myIndex;const myHand=me?.hand||[];const teamMode=state?.mode?.startsWith('team');
  const modeLabel=m=>({'simple':'Simple','spicy':'Spicy','team-simple':'Team · Simple','team-spicy':'Team · Spicy'}[m]||m);
- function create(){if(!name.trim())return setError('Enter your name first.');localStorage.setItem('trio-name',name);socket.emit('createRoom',{name,mode});}
- function join(){if(!name.trim())return setError('Enter your name first.');if(!joinCode.trim())return setError('Enter a room code.');localStorage.setItem('trio-name',name);socket.emit('joinRoom',{name,code:joinCode.trim().toUpperCase()});}
+ function create(){unlockAudio();if(!name.trim())return setError('Enter your name first.');localStorage.setItem('trio-name',name);socket.emit('createRoom',{name,mode});}
+ function join(){unlockAudio();if(!name.trim())return setError('Enter your name first.');if(!joinCode.trim())return setError('Enter a room code.');localStorage.setItem('trio-name',name);socket.emit('joinRoom',{name,code:joinCode.trim().toUpperCase()});}
  function start(){socket.emit('startGame');}
  function revealMiddle(c){if(myTurn)socket.emit('reveal',{type:'middle',cardId:c.id});}
  function revealHand(playerIndex,edge){if(myTurn)socket.emit('reveal',{type:'hand',playerIndex,edge});}
