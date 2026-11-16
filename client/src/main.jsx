@@ -4,8 +4,8 @@ import{io}from'socket.io-client';
 import{Copy,Users,Spade,ArrowUp,ArrowDown,RefreshCw,Crown,Wifi,WifiOff,Play,DoorOpen,Check,Info,Volume2,VolumeX}from'lucide-react';
 import './style.css';
 
-const SERVER=import.meta.env.VITE_SERVER_URL||'http://localhost:3001';
-const socket=io(SERVER,{autoConnect:true});
+const SERVER=import.meta.env.VITE_SERVER_URL||(import.meta.env.DEV?'http://localhost:3001':window.location.origin);
+const socket=io(SERVER,{path:'/socket.io',autoConnect:true});
 const colorFor=n=>['#efb24b','#e56b6f','#58a7a0','#8d78c8','#d47aa8','#7eaa61','#d7b34e','#5e8bc4','#d18a58','#8a9baf','#9a79b6','#6aab91'][n-1];
 function Card({value,hidden=false,small=false,selected=false,onClick,disabled=false}){return <button disabled={disabled||!onClick} onClick={onClick} className={`playing-card ${small?'small':''} ${hidden?'back':''} ${selected?'selected':''}`} style={!hidden?{'--card-color':colorFor(value)}:{}}>{hidden?<><span className="back-mark">✳</span><span className="back-name">TRIO</span></>:<><span className="card-corner">{value}</span><span className="card-number">{value}</span><span className="card-corner bottom">{value}</span></>}</button>}
 function App(){
