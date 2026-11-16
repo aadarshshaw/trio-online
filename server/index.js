@@ -90,4 +90,10 @@ io.on('connection',socket=>{
  socket.on('swapSkip',()=>{const room=[...rooms.values()].find(r=>r.players.some(p=>p.id===socket.id));try{if(!room||room.status!=='swap')throw new Error('No swap is active.');const p=room.players.find(p=>p.id===socket.id);if(!room.swapFor.includes(p.team))throw new Error('Your team is not part of this swap.');p.swapChoice=null;p.swapReady=true;finishSwapIfReady(room);emitRoom(room);}catch(e){fail(socket,e.message);}});
  socket.on('disconnect',()=>{for(const room of rooms.values()){const p=room.players.find(p=>p.id===socket.id);if(p){p.connected=false;room.lastMessage=`${p.name} disconnected. The room remains active.`;emitRoom(room);break;}}});
 });
-httpServer.listen(PORT,()=>console.log(`Trio server listening on ${PORT}`));
+if (!process.env.VERCEL) {
+  httpServer.listen(PORT,()=>console.log(`Trio server listening on ${PORT}`));
+}
+
+// Vercel uses this HTTP server as the service entrypoint. Exporting the
+// server (rather than calling listen()) also lets Socket.IO handle upgrades.
+export default httpServer;
